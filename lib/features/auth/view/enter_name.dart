@@ -1,6 +1,7 @@
 import 'package:contri/apis/auth_api.dart';
 import 'package:contri/common/loader.dart';
 import 'package:contri/features/auth/controller/auth_controller.dart';
+import 'package:contri/features/auth/view/select_image.dart';
 import 'package:contri/theme/pallete.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -95,10 +96,18 @@ class _EnterNameScreenState extends ConsumerState<EnterNameScreen> {
                       child: ElevatedButton(
                         onPressed: () {
                           if (enteredName.text.isNotEmpty) {
-                            ref
-                                .read(authControllerProvider.notifier)
-                                .createUser(context, enteredName.text,
-                                    widget.phoneNumber);
+                            Map<String, String> data = {
+                              "name": enteredName.text,
+                              "phoneNumber": widget.phoneNumber
+                            };
+
+                            Navigator.pushNamed(
+                                context, SelectProfilePhotoScreen.routeName,
+                                arguments: data);
+                            // ref
+                            //     .read(authControllerProvider.notifier)
+                            //     .createUser(context, enteredName.text,
+                            //         widget.phoneNumber);
                           }
                         },
                         style: ElevatedButton.styleFrom(

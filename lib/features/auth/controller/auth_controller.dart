@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:contri/apis/auth_api.dart';
 import 'package:contri/core/failure.dart';
 import 'package:contri/core/type_defs.dart';
@@ -5,7 +7,6 @@ import 'package:contri/core/utils.dart';
 import 'package:contri/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fpdart/fpdart.dart';
 
 StateNotifierProvider<AuthController, bool> authControllerProvider =
     StateNotifierProvider(
@@ -16,21 +17,19 @@ class AuthController extends StateNotifier<bool> {
   AuthController({required AuthAPI authAPI})
       : _authAPI = authAPI,
         super(false);
-  Future<User?> currentUser(BuildContext context) =>
-      _authAPI.getCurrentUser(context: context);
+  Future<User?> currentUser() => _authAPI.getCurrentUser();
 
-  void signInUser(BuildContext context, String OTPLessToken)async {
+  void signInUser(BuildContext context, String OTPLessToken) async {
     state = true;
 
     _authAPI.signIn(OTPLessToken, context);
     state = false;
   }
 
-  void createUser(BuildContext context, String name, String phoneNumber) {
+  void createUser(BuildContext context, String name, String phoneNumber, File? profilePicture) {
     state = true;
-    _authAPI.createUser(context, name, phoneNumber);
+    _authAPI.createUser(context, name, phoneNumber, profilePicture);
     state = false;
-    
   }
   // void signInUser({
   //   required String phoneNumber,

@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:contri/constants/constants.dart';
 import 'package:contri/core/http_error_handeling.dart';
 import 'package:contri/core/utils.dart';
+import 'package:contri/features/auth/controller/auth_controller.dart';
 import 'package:contri/features/auth/view/enter_name.dart';
 import 'package:contri/models/user.dart';
 import 'package:flutter/widgets.dart';
@@ -11,21 +13,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final authAPIProvider = Provider((ref) => AuthAPI());
+final currentUserAccountProvider = FutureProvider((ref) {
+  final authController = ref.watch(authControllerProvider.notifier);
+  return authController.currentUser();
+});
 
 abstract class IAuthAPI {
+  Future<String> uploadImage(BuildContext context, File? image);
   void signIn(String phone, BuildContext context);
-  void createUser(BuildContext context, String name, String phoneNumber);
-  Future<User?> getCurrentUser({
-    required BuildContext context,
-  });
+  void createUser(
+      BuildContext context, String name, String phoneNumber, File? profile);
+  Future<User?> getCurrentUser();
   // void getAdminData();
 }
 
 class AuthAPI implements IAuthAPI {
   @override
-  Future<User?> getCurrentUser({
-    required BuildContext context,
-  }) async {
+  Future<User?> getCurrentUser() async {
     try {
       print("Instde get user data");
       SharedPreferences pref = await SharedPreferences.getInstance();
@@ -35,6 +39,7 @@ class AuthAPI implements IAuthAPI {
       }
       if (token == null) {
         pref.setString('x-auth-token', '');
+        return null;
       }
       var tokenRes = await http.post(
           Uri.parse('${Constants.BASE_URL}/tokenIsValid'),
@@ -52,13 +57,13 @@ class AuthAPI implements IAuthAPI {
           'Content-Type': 'application/json; charset=UTF-8',
           'x-auth-token': token
         });
-        return User.fromJson(jsonDecode(userRes.body));
+        return User.fromJson(userRes.body);
 
         // var userProvider = Provider.of<UserProvider>(context, listen: false);
         // userProvider.setUser(userRes.body);
       }
     } catch (e) {
-      showSnackBar(context, e.toString());
+      print(e.toString());
     }
   }
 
@@ -78,7 +83,7 @@ class AuthAPI implements IAuthAPI {
           'Content-Type': 'application/json; charset=UTF-8'
         },
       );
-      
+
       print(jsonDecode(res.body));
 
       httpErrorHandle(
@@ -105,13 +110,18 @@ class AuthAPI implements IAuthAPI {
   }
 
   @override
-  void createUser(BuildContext context, String name, String phoneNumber) async {
+  void createUser(BuildContext context, String name, String phoneNumber,
+      File? profilePicture) async {
     try {
+      String? profilePicURL = await uploadImage(context, profilePicture);
+      print("GOT PROFILE URL" + profilePicURL);
+
       http.Response res = await http.post(
         Uri.parse('${Constants.BASE_URL}/api/createAccount'),
         body: jsonEncode({
           'name': name,
           'phoneNumber': phoneNumber,
+          'photoURL': profilePicURL,
         }),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8'
@@ -130,5 +140,34 @@ class AuthAPI implements IAuthAPI {
     } catch (e) {
       showSnackBar(context, e.toString());
     }
+  }
+
+  @override
+  Future<String> uploadImage(BuildContext context, File? image) async {
+    try {
+      final url = Uri.parse('https://api.cloudinary.com/v1_1/dzbgk67sd/upload');
+
+      final http.MultipartRequest request = http.MultipartRequest('POST', url);
+
+// Add form fields
+      request.fields['upload_preset'] = 'contri-upload-image';
+
+// Add file
+      request.files.add(await http.MultipartFile.fromPath('file', image!.path));
+
+// Send the request
+      final http.Response response =
+      await http.Response.fromStream(await request.send());
+      print(jsonDecode(response.body)['secure_url']);
+
+      return jsonDecode(response.body)['secure_url'];
+    } catch (e) {
+      print(e.toString());
+      return 'https://res.cloudinary.com/dzbgk67sd/image/upload/v1702044411/contri-profile-pictures/default_profile_pic.jpg';
+    }
+
+    // return jsonDecode(response.body)['secure_url'];
+
+// Use the response as nee
   }
 }
