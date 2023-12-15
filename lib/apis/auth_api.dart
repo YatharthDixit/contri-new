@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:contri/constants/constants.dart';
 import 'package:contri/core/http_error_handeling.dart';
 import 'package:contri/core/utils.dart';
 import 'package:contri/features/auth/controller/auth_controller.dart';
 import 'package:contri/features/auth/view/enter_name.dart';
+import 'package:contri/features/home/screen/home_screeen.dart';
 import 'package:contri/models/user.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
@@ -13,9 +15,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final authAPIProvider = Provider((ref) => AuthAPI());
-final currentUserAccountProvider = FutureProvider((ref) {
+final currentUserAccountProvider = FutureProvider.autoDispose((ref) {
   final authController = ref.watch(authControllerProvider.notifier);
   return authController.currentUser();
+});
+final userDataProvider = FutureProvider.autoDispose.family((ref, String input) {
+  final authController = ref.watch(authControllerProvider.notifier);
+  return authController.getUserData(input);
 });
 
 abstract class IAuthAPI {
@@ -24,6 +30,7 @@ abstract class IAuthAPI {
   void createUser(
       BuildContext context, String name, String phoneNumber, File? profile);
   Future<User?> getCurrentUser();
+  Future<User?> getUserData(String phoneNumber);
   // void getAdminData();
 }
 
@@ -57,7 +64,10 @@ class AuthAPI implements IAuthAPI {
           'Content-Type': 'application/json; charset=UTF-8',
           'x-auth-token': token
         });
-        return User.fromJson(userRes.body);
+
+        final user = User.fromJson(userRes.body);
+
+        return user;
 
         // var userProvider = Provider.of<UserProvider>(context, listen: false);
         // userProvider.setUser(userRes.body);
@@ -96,6 +106,7 @@ class AuthAPI implements IAuthAPI {
               SharedPreferences prefs = await SharedPreferences.getInstance();
               // Provider.of<UserProvider>(context, listen: false).setUser(res.body);
               await prefs.setString('x-auth-token', data['token']);
+              Navigator.pushNamed(context, HomeScreen.routeName);
             } else {
               print("Inside signin else");
 
@@ -157,7 +168,7 @@ class AuthAPI implements IAuthAPI {
 
 // Send the request
       final http.Response response =
-      await http.Response.fromStream(await request.send());
+          await http.Response.fromStream(await request.send());
       print(jsonDecode(response.body)['secure_url']);
 
       return jsonDecode(response.body)['secure_url'];
@@ -169,5 +180,45 @@ class AuthAPI implements IAuthAPI {
     // return jsonDecode(response.body)['secure_url'];
 
 // Use the response as nee
+  }
+
+  @override
+  Future<User?> getUserData(String phoneNumber) async {
+    try {
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      String? token = pref.getString('x-auth-token');
+      if (token == null) {
+        return null;
+      }
+      http.Response userRes = await http.get(
+          Uri.parse('${Constants.BASE_URL}/api/users/'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+            'x-auth-token': token,
+            'phoneNumber': phoneNumber,
+          });
+      print(userRes.body);
+
+      switch (userRes.statusCode) {
+        case 200:
+          final user = User.fromJson(userRes.body);
+          // print(user.toString());
+          return user;
+
+        case 400:
+          print("400" + jsonDecode(userRes.body)['msg']);
+
+          break;
+        case 500:
+          print(jsonDecode(userRes.body)['error']);
+          break;
+        default:
+        // print(userRes.body);
+      }
+
+      return null;
+    } catch (e) {
+      print(e.toString());
+    }
   }
 }

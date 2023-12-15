@@ -39,9 +39,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
     // ref
     //     .read(authControllerProvider.notifier)
     //     .signInUser(context, 'YatharthDixit');
-    //     d499e511885e4d9ab9cd028f1be23cb9
 
-    // AuthAPI().signIn('bb16db1f23d74accb3fefda4bf6a491e', context);
     // print(js)
   }
 

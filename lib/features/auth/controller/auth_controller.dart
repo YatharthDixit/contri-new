@@ -18,6 +18,9 @@ class AuthController extends StateNotifier<bool> {
       : _authAPI = authAPI,
         super(false);
   Future<User?> currentUser() => _authAPI.getCurrentUser();
+  Future<User?> getUserData(String phoneNumber) => _authAPI.getUserData( phoneNumber);
+  
+
 
   void signInUser(BuildContext context, String OTPLessToken) async {
     state = true;

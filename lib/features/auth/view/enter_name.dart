@@ -1,4 +1,3 @@
-import 'package:contri/apis/auth_api.dart';
 import 'package:contri/common/loader.dart';
 import 'package:contri/features/auth/controller/auth_controller.dart';
 import 'package:contri/features/auth/view/select_image.dart';

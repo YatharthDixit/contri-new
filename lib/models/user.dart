@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+
 class User {
   final String id;
   final String name;
@@ -128,3 +129,28 @@ class User {
         token.hashCode;
   }
 }
+// class UserProvider extends StateNotifier<User> {
+//   UserProvider(super.state);
+
+//   void setUser(User user) {
+//     state = user;
+//   }
+
+  
+// }
+
+// final userProvider = StateNotifierProvider<UserProvider, User>((ref) {
+//   return UserProvider(User(
+//     id: '',
+//     name: '',
+//     email: '',
+//     phoneNumber: '',
+//     photoURL: '',
+//     fcmToken: '',
+//     country: '',
+//     currency: '',
+//     didUserSignUp: false,
+//     type: '',
+//     token: '',
+//   ));
+// });
