@@ -74,7 +74,7 @@ class Expense {
 
   factory Expense.fromMap(Map<String, dynamic> map) {
     return Expense(
-      totalAmount: 0.0 + map['totalAmount'] ?? 0.0,
+      totalAmount: 0.0 + map['totalAmount'],
       id: map['_id'] ?? '',
       description: map['description'] ?? '',
       type: map['type'] ?? '',

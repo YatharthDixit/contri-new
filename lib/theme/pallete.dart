@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 class Pallete {
   /// Colors
-  static const greyBackgroundColor = Color.fromRGBO(235, 235, 235, 1);
-  static const greyColor = Color.fromRGBO(88, 88, 88, 1);
+  static const greyBackgroundColor = Color.fromRGBO(234, 234, 234, 1);
+  static const greyColor = Colors.grey;
 
   static const blueLightColor = Color.fromRGBO(33, 150, 243, 1);
   static const redLightColor = Color.fromRGBO(244, 67, 54, 1);

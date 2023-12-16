@@ -1,6 +1,5 @@
 import 'package:contri/apis/auth_api.dart';
 import 'package:contri/core/error_page.dart';
-import 'package:contri/features/auth/controller/auth_controller.dart';
 import 'package:contri/features/auth/view/login_view.dart';
 import 'package:contri/features/home/screen/home_screeen.dart';
 import 'package:contri/models/user.dart';
@@ -8,7 +7,6 @@ import 'package:contri/router.dart';
 import 'package:contri/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

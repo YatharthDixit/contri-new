@@ -1,9 +1,6 @@
 import 'dart:io';
 
 import 'package:contri/apis/auth_api.dart';
-import 'package:contri/core/failure.dart';
-import 'package:contri/core/type_defs.dart';
-import 'package:contri/core/utils.dart';
 import 'package:contri/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

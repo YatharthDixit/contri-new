@@ -1,6 +1,5 @@
 import 'package:contri/apis/expense_api.dart';
 import 'package:contri/models/expense.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final ExpenseControllerProvider =
@@ -28,5 +27,9 @@ class ExpenseController extends StateNotifier<bool> {
     };
     balance = await _expenseAPI.getBalance();
     return balance;
+  }
+
+  Future<Expense?> getExpense(String expenseId) {
+    return _expenseAPI.getExpense(expenseId);
   }
 }

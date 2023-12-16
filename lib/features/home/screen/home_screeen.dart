@@ -1,10 +1,12 @@
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 import 'package:contri/apis/auth_api.dart';
 import 'package:contri/apis/expense_api.dart';
+import 'package:contri/apis/friend_api.dart';
 import 'package:contri/common/loader.dart';
+import 'package:contri/features/expense/screens/expense_details.dart';
 import 'package:contri/features/expense/widget/expense_row.dart';
+import 'package:contri/features/home/widget/friends_row.dart';
 import 'package:contri/features/home/widget/status_card.dart';
-import 'package:contri/features/home/widget/title_row.dart';
 import 'package:contri/features/home/widget/top_bar.dart';
 import 'package:contri/models/expense.dart';
 import 'package:contri/models/user.dart';
@@ -16,7 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
-  static const routeName = '/select-profile-photo-screen';
+  static const routeName = '/home-screen';
 
   const HomeScreen({super.key});
 
@@ -28,7 +30,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _bottomNavIndex = 0;
 
   @override
-  List<String> phoneNumbers = ["+918960685939", "+917417048840"];
 
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -60,11 +61,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Container(
           width: 60,
           height: 60,
-          child: Icon(
-            Icons.add,
-            color: Colors.white,
-            size: 40,
-          ),
           decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(colors: [
@@ -72,6 +68,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Pallete.pinkLightColor,
                 Pallete.orangeLightColor
               ], begin: Alignment.topLeft, end: Alignment.bottomRight)),
+          child: const  Icon(
+            Icons.add,
+            color: Colors.white,
+            size: 40,
+          ),
         ),
         // onPressed: () {
         //   List<Contact> c = [];
@@ -110,22 +111,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(
             height: 10,
           ),
-          ref.watch(expensesProvider).when(data: (data) {
-            return Expanded(
-              child: expenseListWidget(data: data),
-            );
-          }, error: (error, stacktrace) {
-            return Text("Some error Occured");
-          }, loading: () {
-            return Loader();
-          }),
+          _bottomNavIndex == 0
+              ? ref.watch(expensesProvider).when(data: (data) {
+                  return Expanded(
+                    child: ExpenseListWidget(data: data),
+                  );
+                }, error: (error, stacktrace) {
+                  return const Text("Some error Occured");
+                }, loading: () {
+                  return const Loader();
+                })
+              : ref.watch(friendsProvider).when(data: (data) {
+                  return Expanded(
+                    child: UserRowWidget(data: data, user: userData!),
+                  );
+                }, error: (error, stacktrace) {
+                  return const Text("Some error Occured");
+                }, loading: () {
+                  return const Loader();
+                }),
         ]),
       )),
     );
   }
 }
 
-class expenseListWidget extends StatelessWidget {
+class ExpenseListWidget extends StatelessWidget {
   Color iconColor(String i) {
     switch (i) {
       case 'Groceries':
@@ -173,7 +184,7 @@ class expenseListWidget extends StatelessWidget {
   }
 
   final List<Expense> data;
-  expenseListWidget({
+   const ExpenseListWidget({
     Key? key,
     required this.data,
   }) : super(key: key);
@@ -187,12 +198,50 @@ class expenseListWidget extends StatelessWidget {
         Expense expense = data[newIndex];
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: ExpenseRowWidget(
-              icon: icon(data[newIndex].type),
-              description: data[newIndex].description,
-              amount: expense.totalAmount,
-              date: expense.date.format('j M y'),
-              iconColor: iconColor(expense.type)),
+          child: GestureDetector(
+            onTap: () {
+              // print("clicked");
+              Navigator.pushNamed(context, ExpenseDetailsScreen.routeName,
+                  arguments: expense);
+            },
+            child: ExpenseRowWidget(
+                icon: icon(data[newIndex].type),
+                description: data[newIndex].description,
+                amount: expense.totalAmount,
+                date: expense.date.format('j M y'),
+                iconColor: iconColor(expense.type)),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class UserRowWidget extends ConsumerWidget {
+  final List<String> data;
+  final User user;
+  // final data;
+  const UserRowWidget({super.key, required this.user, required this.data});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ListView.builder(
+      itemCount: data.length,
+      itemBuilder: (context, index) {
+        int newIndex = data.length - index - 1;
+        if (data[newIndex] == user.phoneNumber) {
+          return Container();
+        }
+        // if(data[newIndex] == )
+        String friendPhone = data[newIndex];
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: GestureDetector(
+            child: FriendRowWidget(
+              friendPhone: friendPhone,
+            ),
+          ),
         );
       },
     );

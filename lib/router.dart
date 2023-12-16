@@ -1,7 +1,11 @@
 import 'package:contri/features/auth/view/enter_name.dart';
 import 'package:contri/features/auth/view/login_view.dart';
 import 'package:contri/features/auth/view/select_image.dart';
+import 'package:contri/features/expense/screens/expense_details.dart';
+import 'package:contri/features/friends/screens/friend_screen.dart';
 import 'package:contri/features/home/screen/home_screeen.dart';
+import 'package:contri/models/expense.dart';
+import 'package:contri/models/user.dart';
 import 'package:flutter/material.dart';
 
 Route<dynamic> onGenerateRoute(RouteSettings routeSetting) {
@@ -20,6 +24,18 @@ Route<dynamic> onGenerateRoute(RouteSettings routeSetting) {
       var phoneNumber = routeSetting.arguments as String;
       return MaterialPageRoute(
         builder: (_) => EnterNameScreen(phoneNumber: phoneNumber),
+        settings: routeSetting,
+      );
+    case ExpenseDetailsScreen.routeName:
+      var expense = routeSetting.arguments as Expense;
+      return MaterialPageRoute(
+        builder: (_) => ExpenseDetailsScreen(expense: expense),
+        settings: routeSetting,
+      );
+    case FriendsView.routeName:
+      var friend = routeSetting.arguments as User;
+      return MaterialPageRoute(
+        builder: (_) => FriendsView(friend: friend),
         settings: routeSetting,
       );
     case SelectProfilePhotoScreen.routeName:

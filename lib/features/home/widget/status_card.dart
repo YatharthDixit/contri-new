@@ -16,8 +16,6 @@ class StatusCard extends ConsumerWidget {
     double incomingAmount = 0;
     double outgoingAmount = 0;
     ref.watch(balanceProvider).whenData((data) {
-      print("This is data");
-      print(data);
       incomingAmount = data['incomingAmount']! + 0.0;
       outgoingAmount = data['outgoingAmount']! + 0.0;
     });
@@ -50,8 +48,8 @@ class StatusCard extends ConsumerWidget {
                     fontWeight: FontWeight.bold),
               ),
               Text(
-                "₹${(outgoingAmount + incomingAmount).toStringAsFixed(2)}",
-                style: TextStyle(
+                "₹${(incomingAmount - outgoingAmount).toStringAsFixed(2)}",
+                style: const TextStyle(
                     color: Pallete.whiteColor,
                     fontSize: 45,
                     fontWeight: FontWeight.bold),
@@ -93,7 +91,7 @@ class StatusCard extends ConsumerWidget {
                             ),
                             Text(
                               "₹${incomingAmount.toStringAsFixed(2)}",
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontSize: 16,
                                   color: Pallete.whiteColor,
                                   fontWeight: FontWeight.bold),

@@ -7,10 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SelectProfilePhotoScreen extends ConsumerStatefulWidget {
-  Map<String, String> data;
+  final Map<String, String> data;
   static const routeName = '/select-profile-photo-screen';
 
-  SelectProfilePhotoScreen({
+  const SelectProfilePhotoScreen({
     super.key,
     required this.data,
   });
@@ -35,12 +35,11 @@ class _SelectProfilePhotoScreenState
   }
 
   void storeUserData() {
-    print(widget.data['name']);
-    print(widget.data['phoneNumber']);
     ref.read(authAPIProvider).createUser(
         context, widget.data['name']!, widget.data['phoneNumber']!, profilePic);
   }
 
+  @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
@@ -49,7 +48,7 @@ class _SelectProfilePhotoScreenState
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_rounded),
+            icon: const Icon(Icons.arrow_back_ios_rounded),
             onPressed: () {
               Navigator.pop(context);
             },
@@ -61,7 +60,7 @@ class _SelectProfilePhotoScreenState
             padding: const EdgeInsets.all(20.0),
             child: Center(
                 child: SingleChildScrollView(
-              physics: BouncingScrollPhysics(),
+              physics: const BouncingScrollPhysics(),
               child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -98,7 +97,7 @@ class _SelectProfilePhotoScreenState
                     ElevatedButton(
                       onPressed: selectImage,
                       style: ElevatedButton.styleFrom(
-                        shape: CircleBorder(), //<-- SEE HERE
+                        shape: const CircleBorder(), //<-- SEE HERE
                       ),
                       child: profilePic == null
                           ? const CircleAvatar(
