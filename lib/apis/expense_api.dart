@@ -94,7 +94,8 @@ class ExpenseAPI implements IExpenseAPI {
             'x-auth-token': token
           });
       print(response.body);
-      result = jsonDecode(response.body)["summary"];
+
+      result = jsonDecode(response.body);
       print("result");
       print(result);
     } catch (e) {

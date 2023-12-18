@@ -40,6 +40,7 @@ class AuthAPI implements IAuthAPI {
       SharedPreferences pref = await SharedPreferences.getInstance();
       String? token = pref.getString('x-auth-token');
       if (token != null) {
+        print("no token found");
         debugPrint(token);
       }
       if (token == null) {

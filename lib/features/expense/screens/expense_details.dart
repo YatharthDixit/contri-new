@@ -222,7 +222,7 @@ class _ExpenseDetailsScreenState extends ConsumerState<ExpenseDetailsScreen> {
                         ListView.builder(
                             physics: const NeverScrollableScrollPhysics(),
                             shrinkWrap: true,
-                            itemCount: expense.userSpent.length,
+                            itemCount: expense.userPaid.length,
                             itemBuilder: (context, index) {
                               // var user = ref
                               //     .read(authControllerProvider)
@@ -251,13 +251,13 @@ class _ExpenseDetailsScreenState extends ConsumerState<ExpenseDetailsScreen> {
                                           // }
                                         },
                                         child: ref
-                                            .watch(userDataProvider(
-                                                userNumberList[index]))
+                                            .watch(userDataProvider(expense
+                                                .userPaid.keys
+                                                .toList()[index]))
                                             .when(data: (user) {
                                           return ExpensePerson(
                                             user: user!,
-                                            amount: expense.userPaid[
-                                                userNumberList[index]]!,
+                                            amount: expense.userPaid[index]!,
                                           );
                                         }, error: (error, stacktrace) {
                                           return const Text(
@@ -300,7 +300,8 @@ class _ExpenseDetailsScreenState extends ConsumerState<ExpenseDetailsScreen> {
                           child: ListView.builder(
                               physics: const NeverScrollableScrollPhysics(),
                               shrinkWrap: true,
-                              itemCount: expense.userSpent.length,
+                              // itemCount: expense.userSpent.length,
+                              
                               itemBuilder: (context, index) {
                                 // var user = ref
                                 //     .read(authControllerProvider)
@@ -329,13 +330,14 @@ class _ExpenseDetailsScreenState extends ConsumerState<ExpenseDetailsScreen> {
                                             // }
                                           },
                                           child: ref
-                                              .watch(userDataProvider(
-                                                  userNumberList[index]))
+                                              .watch(userDataProvider(expense
+                                                  .userSpent.keys
+                                                  .toList()[index]))
                                               .when(data: (user) {
                                             return ExpensePerson(
                                               user: user!,
-                                              amount: expense.userSpent[
-                                                  userNumberList[index]]!,
+                                              amount: expense
+                                                  .userSpent[user.phoneNumber]!,
                                             );
                                           }, error: (error, stacktrace) {
                                             return const Text(

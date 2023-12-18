@@ -1,11 +1,14 @@
 import 'package:contri/features/auth/view/enter_name.dart';
 import 'package:contri/features/auth/view/login_view.dart';
 import 'package:contri/features/auth/view/select_image.dart';
+import 'package:contri/features/expense/screens/create_expense.dart';
 import 'package:contri/features/expense/screens/expense_details.dart';
 import 'package:contri/features/friends/screens/friend_screen.dart';
+import 'package:contri/features/friends/screens/select_mutiple.dart';
 import 'package:contri/features/home/screen/home_screeen.dart';
 import 'package:contri/models/expense.dart';
 import 'package:contri/models/user.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 Route<dynamic> onGenerateRoute(RouteSettings routeSetting) {
@@ -15,11 +18,26 @@ Route<dynamic> onGenerateRoute(RouteSettings routeSetting) {
         builder: (_) => const HomeScreen(),
         settings: routeSetting,
       );
+    case SelectContactsGroup.routeName:
+      final selectedContactAndIndex =
+          routeSetting.arguments as Map<String, dynamic>;
+
+      return MaterialPageRoute(
+          builder: ((context) => SelectContactsGroup(
+                selectedContactAndIndex: selectedContactAndIndex,
+              )));
     case LoginView.routeName:
       return MaterialPageRoute(
         builder: (_) => const LoginView(),
         settings: routeSetting,
       );
+    case AddExpenseScreen.routeName:
+      final selectedContactAndIndex =
+          routeSetting.arguments as Map<String, dynamic>;
+      return MaterialPageRoute(
+          builder: ((context) => AddExpenseScreen(
+                selectedContactAndIndex: selectedContactAndIndex,
+              )));
     case EnterNameScreen.routeName:
       var phoneNumber = routeSetting.arguments as String;
       return MaterialPageRoute(

@@ -3,7 +3,6 @@ import 'package:contri/apis/friend_api.dart';
 import 'package:contri/common/loader.dart';
 import 'package:contri/features/expense/screens/expense_details.dart';
 import 'package:contri/features/expense/widget/expense_row.dart';
-import 'package:contri/models/expense.dart';
 import 'package:contri/models/user.dart';
 import 'package:contri/theme/pallete.dart';
 import 'package:date_time_format/date_time_format.dart';
@@ -115,7 +114,7 @@ class _FriendsViewState extends ConsumerState<FriendsView> {
                 height: size.height * 0.2,
                 width: size.width * 0.95,
                 decoration: BoxDecoration(
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
@@ -130,7 +129,7 @@ class _FriendsViewState extends ConsumerState<FriendsView> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        const Text(
                           "Total Balance",
                           style: TextStyle(
                               color: Pallete.greyColor,

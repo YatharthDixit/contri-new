@@ -1,5 +1,7 @@
 PODS:
   - Flutter (1.0.0)
+  - flutter_contacts (0.0.1):
+    - Flutter
   - image_picker_ios (0.0.1):
     - Flutter
   - otpless_flutter (0.0.4):
@@ -14,6 +16,7 @@ PODS:
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
+  - flutter_contacts (from `.symlinks/plugins/flutter_contacts/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - otpless_flutter (from `.symlinks/plugins/otpless_flutter/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
@@ -26,6 +29,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
+  flutter_contacts:
+    :path: ".symlinks/plugins/flutter_contacts/ios"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
   otpless_flutter:
@@ -37,6 +42,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  flutter_contacts: edb1c5ce76aa433e20e6cb14c615f4c0b66e0983
   image_picker_ios: 4a8aadfbb6dc30ad5141a2ce3832af9214a705b5
   otpless_flutter: 8c67abdc7821fb8eba66596f41aba022aceb6c9f
   OtplessSDK: b8bbd2e85bee4ebdadb7f5503dc8d596067cd84b

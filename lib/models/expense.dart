@@ -66,7 +66,7 @@ class Expense {
       'userSpent': userSpent,
       'groupId': groupId,
       'isGroupExpense': isGroupExpense,
-      'date': date.millisecondsSinceEpoch,
+      'createdAt': date.millisecondsSinceEpoch,
       'userCreated': userCreated,
       'isSettlement': isSettlement,
     };
@@ -84,7 +84,7 @@ class Expense {
           .map((key, value) => MapEntry(key, (value + 0.0))),
       groupId: map['groupId'] ?? '',
       isGroupExpense: map['isGroupExpense'] ?? false,
-      date: DateTime.parse(map['date']),
+      date: DateTime.parse(map['createdAt']),
       userCreated: map['userCreated'] ?? '',
       isSettlement: map['isSettlement'] ?? false,
     );
