@@ -192,18 +192,17 @@ class AuthAPI implements IAuthAPI {
       switch (userRes.statusCode) {
         case 200:
           final user = User.fromJson(userRes.body);
-          // print(user.toString());
           return user;
 
         case 400:
-          debugPrint("400 ${jsonDecode(userRes.body)['msg']}");
+          print("400 ${jsonDecode(userRes.body)['msg']}");
 
           break;
         case 500:
-          debugPrint(jsonDecode(userRes.body)['error']);
+          print(jsonDecode(userRes.body)['error']);
           break;
         default:
-          debugPrint(userRes.body);
+          print(userRes.body);
       }
 
       return null;

@@ -60,10 +60,17 @@ class ExpenseAPI implements IExpenseAPI {
         });
 
     final data = jsonDecode(response.body);
+
     // print(data.length);
     for (int i = 0; i < data.length; i++) {
+      print("-------------DATA---------------");
+      print(data[i]);
+      print("-------------USER---------------");
+      print(Expense.fromMap(data[i]));
+
       // print("$i + ::::::::: + ${data[i]}");
       // print(data[i].runtimeType);
+
       expenses.add(Expense.fromMap(data[i]));
     }
     // } catch (e) {

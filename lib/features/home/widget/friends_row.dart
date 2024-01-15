@@ -2,6 +2,7 @@ import 'package:contri/apis/auth_api.dart';
 import 'package:contri/apis/friend_api.dart';
 import 'package:contri/common/loader.dart';
 import 'package:contri/features/friends/screens/friend_screen.dart';
+import 'package:contri/models/user.dart';
 import 'package:contri/theme/pallete.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +28,21 @@ class FriendRowWidget extends ConsumerWidget {
         padding: const EdgeInsets.all(18.0),
         child: ref.watch(userDataProvider(friendPhone)).when(
               data: (user) {
+                if (user == null) {
+                  user = User(
+                      id: "",
+                      name: friendPhone,
+                      email: '',
+                      phoneNumber: friendPhone,
+                      photoURL:
+                          "https://res.cloudinary.com/dzbgk67sd/image/upload/v1702044411/contri-profile-pictures/default_profile_pic.jpg",
+                      fcmToken: '',
+                      country: 'India',
+                      currency: 'INR',
+                      didUserSignUp: false,
+                      type: 'User',
+                      token: '');
+                }
                 return GestureDetector(
                   onTap: () {
                     Navigator.pushNamed(
@@ -42,7 +58,7 @@ class FriendRowWidget extends ConsumerWidget {
                       Row(
                         children: [
                           CircleAvatar(
-                            foregroundImage: NetworkImage(user!.photoURL),
+                            foregroundImage: NetworkImage(user.photoURL),
                             radius: 25,
                           ),
                           const SizedBox(

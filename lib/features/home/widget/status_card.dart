@@ -43,7 +43,7 @@ class StatusCard extends ConsumerWidget {
               const Text(
                 "Total Balance",
                 style: TextStyle(
-                    color: Pallete.greyBackgroundColor,
+                    color: Pallete.whiteColor,
                     fontSize: 16,
                     fontWeight: FontWeight.bold),
               ),

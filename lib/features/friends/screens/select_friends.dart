@@ -1,20 +1,23 @@
-import 'package:contri/common/loader.dart';
-import 'package:contri/features/expense/screens/create_expense.dart';
-import 'package:contri/features/friends/friend_controller.dart';
+import 'dart:ffi';
+import 'dart:math';
+
+import 'package:contri/contact/select_contact_controller.dart';
 import 'package:contri/theme/pallete.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_contacts/contact.dart';
-import 'package:flutter_contacts/properties/phone.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../common/loader.dart';
 
 final selectedGroupContacts = StateProvider<List<Contact>>((ref) => []);
 
 class SelectContactsGroup extends ConsumerStatefulWidget {
-  Map<String, dynamic> selectedContactAndIndex = {"contact": [], "index": []};
+  Map<String, dynamic> selectedContactAndIndex = {'contact': [], 'index': []};
   static const routeName = '/add-people-screen';
 
-  SelectContactsGroup({super.key, required this.selectedContactAndIndex});
+  SelectContactsGroup({Key? key, required this.selectedContactAndIndex})
+      : super(key: key);
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -25,24 +28,19 @@ class _SelectContactsGroupState extends ConsumerState<SelectContactsGroup> {
   List<dynamic> selectedContactsIndex = [];
   TextEditingController searchController = TextEditingController();
   List<dynamic> selectedContacts = [];
-  List<Contact> allContact = [];
+  late List<dynamic> allContact;
   late List<Contact> foundContact = allContactList;
 
   @override
   initState() {
     super.initState();
 
-    foundContact = allContactList;
-
-    // String phone = FirebaseAuth.instance.currentUser!.phoneNumber.toString();
-
-    // if (widget.selectedContactAndIndex['index'] != null)
-    selectedContactsIndex = widget.selectedContactAndIndex['index'] ?? [];
+    selectedContactsIndex = widget.selectedContactAndIndex['index']!;
     Phone p = Phone('+918960685939');
 
     Contact c = Contact(displayName: "You", phones: [p]);
 
-    selectedContacts = widget.selectedContactAndIndex['contact'] ?? [];
+    selectedContacts = widget.selectedContactAndIndex['contact']!;
     if (!selectedContacts.contains(c)) {
       selectedContacts.add(c);
     }
@@ -86,26 +84,16 @@ class _SelectContactsGroupState extends ConsumerState<SelectContactsGroup> {
     ref.watch(getContactsProvider).when(
           data: (contactList) {
             allContactList = contactList;
-            var length = allContactList.length;
-            for (var i = 0; i < length; i++) {
-              if (allContactList[i].phones.length > 1) {
-                for (var j = 0; j < allContactList[i].phones.length; j++) {
-                  allContactList.insert(
-                      i,
-                      Contact(
-                          name: allContactList[i].name,
-                          phones: [allContactList[i].phones[j]]));
-                  length++;
-                }
-              }
-            }
+
             if (!isInitiated) {
               isInitiated = true;
               foundContact = allContactList;
             }
           },
-          error: (err, trace) => Text(
-            err.toString(),
+          error: (err, trace) => Center(
+            child: Text(
+              err.toString(),
+            ),
           ),
           loading: () => const Loader(),
         );
@@ -113,9 +101,6 @@ class _SelectContactsGroupState extends ConsumerState<SelectContactsGroup> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(getContactsProvider).whenData((value) {
-      allContact = value;
-    });
     final size = MediaQuery.of(context).size;
 
     var greyLightColor;
@@ -131,7 +116,7 @@ class _SelectContactsGroupState extends ConsumerState<SelectContactsGroup> {
             height: 70,
             width: 120,
             decoration: BoxDecoration(
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
@@ -153,12 +138,6 @@ class _SelectContactsGroupState extends ConsumerState<SelectContactsGroup> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_rounded),
             onPressed: () {
-              Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  AddExpenseScreen.routeName,
-                  arguments: selectedContacts,
-                  (route) => false);
-              print(selectedContacts.length);
               Navigator.pop(context, {
                 "contact": selectedContacts,
                 "index": selectedContactsIndex

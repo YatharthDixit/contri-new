@@ -255,9 +255,12 @@ class _ExpenseDetailsScreenState extends ConsumerState<ExpenseDetailsScreen> {
                                                 .userPaid.keys
                                                 .toList()[index]))
                                             .when(data: (user) {
+                                          print(expense);
                                           return ExpensePerson(
                                             user: user!,
-                                            amount: expense.userPaid[index]!,
+                                            amount: expense.userPaid[expense
+                                                .userPaid.keys
+                                                .toList()[index]]!,
                                           );
                                         }, error: (error, stacktrace) {
                                           return const Text(
@@ -300,8 +303,7 @@ class _ExpenseDetailsScreenState extends ConsumerState<ExpenseDetailsScreen> {
                           child: ListView.builder(
                               physics: const NeverScrollableScrollPhysics(),
                               shrinkWrap: true,
-                              // itemCount: expense.userSpent.length,
-                              
+                              itemCount: expense.userSpent.length,
                               itemBuilder: (context, index) {
                                 // var user = ref
                                 //     .read(authControllerProvider)
@@ -336,8 +338,9 @@ class _ExpenseDetailsScreenState extends ConsumerState<ExpenseDetailsScreen> {
                                               .when(data: (user) {
                                             return ExpensePerson(
                                               user: user!,
-                                              amount: expense
-                                                  .userSpent[user.phoneNumber]!,
+                                              amount: expense.userSpent[expense
+                                                  .userSpent.keys
+                                                  .toList()[index]]!,
                                             );
                                           }, error: (error, stacktrace) {
                                             return const Text(

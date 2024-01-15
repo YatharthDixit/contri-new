@@ -78,7 +78,7 @@ class Expense {
       id: map['_id'] ?? '',
       description: map['description'] ?? '',
       type: map['type'] ?? '',
-      userPaid: Map<String, dynamic>.from(map['userSpent'])
+      userPaid: Map<String, dynamic>.from(map['userPaid'])
           .map((key, value) => MapEntry(key, (value + 0.0))),
       userSpent: Map<String, dynamic>.from(map['userSpent'])
           .map((key, value) => MapEntry(key, (value + 0.0))),

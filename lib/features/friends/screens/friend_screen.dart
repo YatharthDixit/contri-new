@@ -132,7 +132,7 @@ class _FriendsViewState extends ConsumerState<FriendsView> {
                         const Text(
                           "Total Balance",
                           style: TextStyle(
-                              color: Pallete.greyColor,
+                              color: Pallete.greyBackgroundColor,
                               fontSize: 18,
                               fontWeight: FontWeight.w600),
                         ),
@@ -467,15 +467,15 @@ class _FriendsViewState extends ConsumerState<FriendsView> {
                 ),
               ),
               SizedBox(
-                height: size.height * 0.02,
+                height: size.height * 0.01,
               ),
               const Text(
-                "   Expenses",
+                "Expenses",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.start,
               ),
               SizedBox(
-                height: size.height * 0.02,
+                height: size.height * 0.01,
               ),
               ref
                   .watch(friendExpensesProvider(widget.friend!.phoneNumber))
