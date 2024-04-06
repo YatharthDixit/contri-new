@@ -1,4 +1,6 @@
 import 'package:chip_list/chip_list.dart';
+import 'package:contri/contact/contact_api.dart';
+import 'package:contri/contact/select_contact_controller.dart';
 import 'package:contri/core/utils.dart';
 import 'package:contri/features/friends/screens/select_friends.dart';
 
@@ -22,308 +24,386 @@ class AddExpenseScreen extends ConsumerStatefulWidget {
 }
 
 class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   void _awaitReturnValueFromSecondScreen(BuildContext context) async {
-    final result = await Navigator.push(
+    await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => SelectContactsGroup(
             selectedContactAndIndex: widget.selectedContactAndIndex,
           ),
         ));
-
     // after the SecondScreen result comes back update the Text widget with it
-    setState(() {
-      if (result != null) {
-        widget.selectedContactAndIndex = result!;
-        selectedContacts = widget.selectedContactAndIndex['contact']!;
-        personToPay = [];
-        for (Contact i in selectedContacts) {
-          personToPay.add(S2Choice(value: i, title: i.displayName.toString()));
-        }
-      }
-      splitEqually();
-    });
   }
 
+  void calculateTotalAmountPaid() {
+    double totalAmountPaid =
+        amountPaidPerPerson.values.fold(0.0, (sum, amount) => sum + amount);
+    if (totalAmountPaid == amountDouble) {
+      saveButtonText = "Save";
+    } else {
+      saveButtonText =
+          "Balance: ${(amountDouble - totalAmountPaid).toStringAsFixed(2)}";
+    }
+  }
+
+  Map<Contact, double> amountPaidPerPerson = {};
+  String type = 'Others';
+  String? category = "";
+  int tag = 1;
+  int singlePaidPersonIndex = 0;
   List<S2Choice<Contact>> personToPay = [];
   List<TextEditingController> spentPerPersonController = [];
+  List<TextEditingController> amountPaidPerPersonConntroller = [];
   List<double> spentPerPerson = [];
-  List<TextEditingController> PaidPerPersonController = [];
-  List<double> PaidPerPerson = [];
+  Map<Contact, double> selectedContactsAndPaidAmount = {};
+  List<Contact> selectedContact = [];
+  Map<Contact, double> selectedPeoples = {};
+  List<int> catSelected = [0];
+  List<TextEditingController> _paidPerPersonController = [];
 
-  Contact payingContact =
-      Contact(displayName: "You", phones: [Phone('+918960685939')]);
-  TextEditingController amount = TextEditingController();
+  TextEditingController amount = TextEditingController(text: '0');
   TextEditingController name = TextEditingController();
-  late double splittingAmountSingle;
+  double splittingAmountSingle = 0;
   double customSplitBalance = 0;
   String saveButtonText = "Save";
-  late TabController _tabController;
+  late TabController _paidTabController;
+  late TabController _spentTabController;
   // late UserModel user;
   double amountDouble = 0;
 
+  String paidByButtonText = "Save";
+
+  void updatePaidSaveButtonText() {}
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+  }
+
   void showPaidByModalSheet(Size size) {
-    late TabController _paidTabController;
-
     showModalBottomSheet(
+        backgroundColor: Colors.transparent,
         context: context,
-        builder: (context) => Container(
-              height: size.height * 0.275,
-              width: size.width * 0.85,
-              decoration: BoxDecoration(
-                  color: Pallete.whiteColor,
-                  borderRadius: BorderRadius.circular(40)),
-              child: Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Column(
-                  children: [
-                    Container(
-                      width: size.width * 0.85,
-                      height: size.width * 0.07,
-                      child: TabBar(
-                        labelPadding:
-                            const EdgeInsets.only(left: 20, right: 20),
-                        controller: _tabController,
-                        labelColor: Colors.white,
-                        onTap: (value) {
-                          setState(() {});
-                        },
-                        unselectedLabelColor: Colors.black,
-                        // isScrollable: true,
-                        indicatorSize: TabBarIndicatorSize.label,
-                        indicator: BoxDecoration(
-                            color: Pallete.pinkLightColor,
-                            borderRadius: BorderRadius.circular(60)),
+        builder: (context) => StatefulBuilder(builder: ((context, setState) {
+              return Container(
+                height: size.height * 0.07 * selectedContact.length +
+                    size.height * 0.2,
+                width: size.width * 0.95,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(40)),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      SizedBox(
+                        width: size.width * 0.95,
+                        height: size.width * 0.08,
+                        child: TabBar(
+                          labelPadding:
+                              const EdgeInsets.only(left: 20, right: 20),
+                          controller: _paidTabController,
+                          labelColor: Colors.white,
+                          onTap: (value) {
+                            setState(() {});
+                          },
+                          unselectedLabelColor: Colors.black,
 
-                        tabs: [
-                          Tab(
-                            child: Container(
-                              child: const Center(
+                          // isScrollable: true,
+                          indicatorSize: TabBarIndicatorSize.label,
+                          indicator: BoxDecoration(
+                              color: Pallete.pinkLightColor,
+                              borderRadius: BorderRadius.circular(40)),
+
+                          tabs: const [
+                            Tab(
+                              child: Center(
                                   child: Text(
-                                "Equally",
+                                "Single",
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.w400,
                                 ),
                               )),
                             ),
-                          ),
-                          Tab(
-                            child: Container(
-                              // decoration: BoxDecoration(
-                              //     borderRadius: BorderRadius.circular(60)),
-                              child: const Center(
+                            Tab(
+                              child: Center(
                                   child: Text(
-                                "Custom",
+                                "Multiple",
                                 style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.w400),
+                                    fontSize: 20, fontWeight: FontWeight.w400),
                               )),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TabBarView(
-                          controller: _tabController,
-                          children: [
-                            ListView.builder(
-                                physics: const BouncingScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount: selectedContacts.length,
-                                itemBuilder: ((context, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      children: [
-                                        Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              selectedContacts[index] is String
-                                                  ? const Text("You",
-                                                      style: TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.w600))
-                                                  : Text(
-                                                      selectedContacts[index]
-                                                          .displayName,
-                                                      style: const TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.w600)),
-                                              Text(
-                                                  "₹${splittingAmountSingle.toStringAsFixed(2)}")
-                                            ]),
-                                        const SizedBox(
-                                          height: 8,
-                                        ),
-                                        Divider()
-                                      ],
-                                    ),
-                                  );
-                                })),
-                            ListView.builder(
-                                physics: BouncingScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount: selectedContacts.length,
-                                itemBuilder: ((context, index) {
-                                  spentPerPerson.add(0);
-                                  spentPerPersonController
-                                      .add(new TextEditingController());
-                                  return Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      children: [
-                                        Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                  selectedContacts[index]
-                                                      .displayName,
-                                                  style: const TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.w600)),
-                                              Container(
-                                                width: size.width * 0.25,
-                                                height: size.height * 0.035,
-                                                child: Row(
-                                                  children: [
-                                                    const Text(
-                                                      "₹",
-                                                      style: TextStyle(
-                                                          fontSize: 18,
-                                                          fontWeight:
-                                                              FontWeight.w500),
-                                                    ),
-                                                    const SizedBox(
-                                                      width: 5,
-                                                    ),
-                                                    Expanded(
-                                                      child: Container(
-                                                        decoration:
-                                                            BoxDecoration(
-                                                                border:
-                                                                    Border.all(
-                                                                  color: Pallete
-                                                                      .greyColor,
-                                                                ),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            8)),
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .only(
-                                                                  left: 8.0),
-                                                          child: TextField(
-                                                            onTap: _scrollDown,
-                                                            style: const TextStyle(
-                                                                fontSize: 18,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w500),
-                                                            controller:
-                                                                spentPerPersonController[
-                                                                    index],
-                                                            keyboardType:
-                                                                TextInputType
-                                                                    .number,
-                                                            decoration:
-                                                                const InputDecoration(
-                                                                    border:
-                                                                        InputBorder
-                                                                            .none),
-                                                            onChanged: (value) {
-                                                              value.isEmpty
-                                                                  ? spentPerPerson[
-                                                                      index] = 0
-                                                                  : spentPerPerson[
-                                                                          index] =
-                                                                      double.parse(
-                                                                          value);
-                                                              splitCustom();
-                                                            },
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              )
-                                            ]),
-                                        const SizedBox(
-                                          height: 8,
-                                        ),
-                                        const Divider()
-                                      ],
-                                    ),
-                                  );
-                                })),
                           ],
                         ),
                       ),
-                    )
-                  ],
+                      const SizedBox(
+                        height: 12,
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: TabBarView(
+                            controller: _paidTabController,
+                            children: [
+                              ListView.builder(
+                                  physics: const BouncingScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemCount: selectedContact.length,
+                                  itemBuilder: ((context, index) {
+                                    return GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () {
+                                        setState(() {
+                                          singlePaidPersonIndex = index;
+                                          Navigator.pop(context);
+                                        });
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 10),
+                                        child: Column(
+                                          children: [
+                                            Row(
+                                              children: [
+                                                SizedBox(
+                                                    width: 35,
+                                                    child: index ==
+                                                            singlePaidPersonIndex
+                                                        ? const Icon(
+                                                            Icons.circle,
+                                                            color: Pallete
+                                                                .pinkColor,
+                                                            size: 12,
+                                                          )
+                                                        : const Icon(
+                                                            Icons
+                                                                .circle_outlined,
+                                                            color: Pallete
+                                                                .pinkColor,
+                                                            size: 12,
+                                                          )
+                                                    // children: [
+                                                    //   Icon(
+                                                    //     Icons.circle,
+                                                    //     size: 9,
+                                                    //   ),
+                                                    //   SizedBox(
+                                                    //     width: 10,
+                                                    //   ),
+                                                    // ],
+                                                    ),
+                                                Expanded(
+                                                  child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Text(
+                                                            selectedContact[
+                                                                    index]
+                                                                .displayName,
+                                                            style: index ==
+                                                                    singlePaidPersonIndex
+                                                                ? const TextStyle(
+                                                                    fontSize:
+                                                                        16,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600)
+                                                                : TextStyle(
+                                                                    fontSize:
+                                                                        16,
+                                                                    color: Colors
+                                                                        .grey
+                                                                        .shade800,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w400)),
+                                                        Text(
+                                                          "₹${index - 1 == singlePaidPersonIndex ? int.parse(amount.text).toStringAsFixed(2) : "0.00"}",
+                                                          style: const TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600),
+                                                        )
+                                                      ]),
+                                                ),
+                                                const SizedBox(
+                                                  height: 8,
+                                                ),
+                                              ],
+                                            ),
+                                            const Divider()
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  })),
+                              ListView.builder(
+                                  physics: const BouncingScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemCount: selectedContact.length,
+                                  itemBuilder: ((context, index) {
+                                    amountPaidPerPersonConntroller
+                                        .add(TextEditingController());
+
+                                    return Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        children: [
+                                          Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(
+                                                    selectedContact[index]
+                                                        .displayName,
+                                                    style: const TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w600)),
+                                                SizedBox(
+                                                  width: size.width * 0.25,
+                                                  height: size.height * 0.035,
+                                                  child: Row(
+                                                    children: [
+                                                      const Text(
+                                                        "₹",
+                                                        style: TextStyle(
+                                                            fontSize: 18,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w500),
+                                                      ),
+                                                      const SizedBox(
+                                                        width: 5,
+                                                      ),
+                                                      Expanded(
+                                                        child: Container(
+                                                          decoration:
+                                                              BoxDecoration(
+                                                                  border: Border
+                                                                      .all(
+                                                                    color: Pallete
+                                                                        .greyColor,
+                                                                  ),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              8)),
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    left: 8.0),
+                                                            child: TextField(
+                                                              onTap:
+                                                                  _scrollDown,
+                                                              style: const TextStyle(
+                                                                  fontSize: 18,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500),
+                                                              controller:
+                                                                  amountPaidPerPersonConntroller[
+                                                                      index],
+                                                              keyboardType:
+                                                                  TextInputType
+                                                                      .number,
+                                                              decoration: const InputDecoration(
+                                                                  border:
+                                                                      InputBorder
+                                                                          .none),
+                                                              onChanged:
+                                                                  (value) {
+                                                                if (value
+                                                                    .isNotEmpty) {
+                                                                  selectedContactsAndPaidAmount[
+                                                                      selectedContact[
+                                                                          index]] = double
+                                                                      .parse(
+                                                                          value);
+                                                                }
+                                                                updatePaidSaveButtonText();
+                                                              },
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                )
+                                              ]),
+                                          const SizedBox(
+                                            height: 8,
+                                          ),
+                                          const Divider()
+                                        ],
+                                      ),
+                                    );
+                                  })),
+                            ],
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
                 ),
-              ),
-            ));
+              );
+            })));
   }
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(vsync: this, length: 2, initialIndex: 0);
+    _paidTabController = TabController(vsync: this, length: 2, initialIndex: 0);
+    _spentTabController =
+        TabController(vsync: this, length: 2, initialIndex: 0);
 
     customSplitBalance = 0;
 
-    Phone p = Phone("+918960685939");
+    // Phone p = Phone("+918960685939");
 
-    Contact c = Contact(displayName: "You", phones: [p]);
+    // Contact c = Contact(displayName: "You", phones: [p]);
 
-    if (!selectedContacts.contains(c)) {
-      selectedContacts.add(c);
-    }
+    // if (!selectedContacts.contains(c)) {
+    //   selectedContacts.add(c);
+    // }
   }
 
+  void updateContacts() {}
+
   void uploadEqual(String name, double totalAmount, String cat) {
-    for (var i = 0; i < selectedContacts.length; i++) {
-      selectedPeoples[selectedContacts[i]] = splittingAmountSingle;
-    }
-    createExpense(name, totalAmount, cat);
+    // for (var i = 0; i < selectedContacts.length; i++) {
+    //   selectedPeoples[selectedContacts[i]] = splittingAmountSingle;
+    // }
+    // createExpense(name, totalAmount, cat);
   }
 
   void uploadCustom(String name, double totalAmount, String cat) {
-    for (var i = 0; i < selectedContacts.length; i++) {
-      selectedPeoples[selectedContacts[i]] = spentPerPerson[i];
-    }
-    createExpense(name, totalAmount, cat);
+    // for (var i = 0; i < selectedContacts.length; i++) {
+    //   selectedPeoples[selectedContacts[i]] = spentPerPerson[i];
+    // }
+    // createExpense(name, totalAmount, cat);
   }
 
-  List<dynamic> selectedContacts = [];
-  Map<Contact, double> selectedPeoples = Map();
-  List<int> catSelected = [0];
-
   void splitEqually() {
-    try {
-      if (selectedContacts.length == 1) {
-        splittingAmountSingle = amountDouble;
-      } else {
-        splittingAmountSingle = amountDouble / selectedContacts.length;
-      }
-    } catch (e) {
-      splittingAmountSingle = 0;
-    }
+    // try {
+    //   if (selectedContactsAndPaidAmount.length == 1) {
+    //     splittingAmountSingle = amountDouble;
+    //   } else {
+    //     splittingAmountSingle =
+    //         amountDouble / selectedContactsAndPaidAmount.length;
+    //   }
+    // } catch (e) {
+    //   splittingAmountSingle = 0;
+    // }
   }
 
   final ScrollController _controller = ScrollController();
@@ -332,7 +412,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
   void _scrollDown() {
     _controller.animateTo(
       _controller.position.maxScrollExtent,
-      duration: Duration(seconds: 1),
+      duration: const Duration(seconds: 1),
       curve: Curves.fastOutSlowIn,
     );
   }
@@ -345,7 +425,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
       }
 
       if (customSplitBalance != 0) {
-        saveButtonText = "Balance: ${customSplitBalance}";
+        saveButtonText = "Balance: $customSplitBalance";
       } else {
         saveButtonText = "Save";
       }
@@ -353,26 +433,25 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
       if (amount.text == "") {
         showSnackBar(context, "Enter the Amount first.");
       }
-      ;
     }
     setState(() {});
   }
 
   void createExpense(String name, double totalAmount, String cat) {
-    String currUserPhone =
-        payingContact.phones[0].number.replaceAll(RegExp('[^+0-9]'), '');
-    if (!currUserPhone.startsWith("+91")) {
-      currUserPhone = "+91$currUserPhone";
-    }
+    // String currUserPhone =
+    //     payingContact.phones[0].number.replaceAll(RegExp('[^+0-9]'), '');
+    // if (!currUserPhone.startsWith("+91")) {
+    //   currUserPhone = "+91$currUserPhone";
+    // }
   }
-
-  String type = 'Others';
-  String? category = "";
-  int tag = 1;
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+
+    selectedContactsAndPaidAmount = ref.watch(selectedContactProvider).;
+
+    selectedContact = selectedContactsAndPaidAmount.keys.toList();
 
     // TextEditingController _colorsTextEditingController =
     //     TextEditingController();
@@ -383,7 +462,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_rounded),
+            icon: const Icon(Icons.arrow_back_ios_rounded),
             onPressed: () {
               Navigator.pop(context);
             },
@@ -441,7 +520,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                                       amount.text.isEmpty
                                           ? amountDouble = 0
                                           : amountDouble = double.parse(value);
-                                      _tabController.index == 0
+                                      _spentTabController.index == 0
                                           ? splitEqually()
                                           : splitCustom();
                                     });
@@ -465,7 +544,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                   child: Padding(
                     padding: const EdgeInsets.only(left: 21, right: 23),
                     child: Row(children: [
-                      Icon(
+                      const Icon(
                         Icons.description,
                         color: Pallete.greyColor,
                       ),
@@ -503,8 +582,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                       child: ChipList(
                         // shouldWrap: true,
                         listOfChipNames: expenseCategory,
-                        borderRadiiList: [30],
-                        inactiveBorderColorList: [Pallete.greyBackgroundColor],
+                        borderRadiiList: const [30],
+                        inactiveBorderColorList: const [
+                          Pallete.greyBackgroundColor
+                        ],
                         // wrapAlignment: WrapAlignment.spaceEvenly,
                         activeBgColorList: const [Pallete.pinkLightColor],
                         inactiveBgColorList: const [Colors.white],
@@ -533,8 +614,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                         backgroundColor: Pallete.whiteColor,
                         elevation: 0,
                       ),
-                      child: selectedContacts.length < 2
-                          ? Row(
+                      child: selectedContact.length < 2
+                          ? const Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Row(
@@ -543,7 +624,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                                       Icons.people_rounded,
                                       color: Pallete.greyColor,
                                     ),
-                                    const SizedBox(
+                                    SizedBox(
                                       width: 26,
                                     ),
                                     Text(
@@ -565,7 +646,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                               children: [
                                 Row(
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.people_rounded,
                                       color: Pallete.greyColor,
                                     ),
@@ -573,15 +654,15 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                                       width: 15,
                                     ),
                                     Text(
-                                      "${(selectedContacts.length - 1).toString()} People Added",
-                                      style: TextStyle(
+                                      "${(selectedContact.length - 1).toString()} People Added",
+                                      style: const TextStyle(
                                           fontSize: 22,
                                           color: Pallete.greyColor,
                                           fontWeight: FontWeight.normal),
                                     )
                                   ],
                                 ),
-                                Icon(
+                                const Icon(
                                   Icons.navigate_next,
                                   color: Pallete.greyColor,
                                 )
@@ -596,8 +677,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                 SizedBox(
                   height: size.height * 0.03,
                 ),
-                selectedContacts.length < 2
-                    ? SizedBox()
+                selectedContact.length < 2
+                    ? const SizedBox()
                     : Container(
                         height: size.height * 0.09,
                         width: size.width * 0.85,
@@ -611,7 +692,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                               backgroundColor: Pallete.whiteColor,
                               elevation: 0,
                             ),
-                            child: Row(
+                            child: const Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Row(
@@ -620,7 +701,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                                       Icons.attach_money,
                                       color: Pallete.greyColor,
                                     ),
-                                    const SizedBox(
+                                    SizedBox(
                                       width: 26,
                                     ),
                                     Text(
@@ -668,7 +749,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                 SizedBox(
                   height: size.height * 0.03,
                 ),
-                selectedContacts.length > 1
+                selectedContact.length > 1
                     ? Container(
                         height: size.height * 0.275,
                         width: size.width * 0.85,
@@ -679,13 +760,13 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                           padding: const EdgeInsets.all(15.0),
                           child: Column(
                             children: [
-                              Container(
+                              SizedBox(
                                 width: size.width * 0.85,
                                 height: size.width * 0.07,
                                 child: TabBar(
                                   labelPadding: const EdgeInsets.only(
                                       left: 20, right: 20),
-                                  controller: _tabController,
+                                  controller: _spentTabController,
                                   labelColor: Colors.white,
                                   onTap: (value) {
                                     setState(() {});
@@ -697,31 +778,25 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                                       color: Pallete.pinkLightColor,
                                       borderRadius: BorderRadius.circular(60)),
 
-                                  tabs: [
+                                  tabs: const [
                                     Tab(
-                                      child: Container(
-                                        child: const Center(
-                                            child: Text(
-                                          "Equally",
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                        )),
-                                      ),
+                                      child: Center(
+                                          child: Text(
+                                        "Equally",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                      )),
                                     ),
                                     Tab(
-                                      child: Container(
-                                        // decoration: BoxDecoration(
-                                        //     borderRadius: BorderRadius.circular(60)),
-                                        child: const Center(
-                                            child: Text(
-                                          "Custom",
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w400),
-                                        )),
-                                      ),
+                                      child: Center(
+                                          child: Text(
+                                        "Custom",
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w400),
+                                      )),
                                     ),
                                   ],
                                 ),
@@ -733,13 +808,13 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: TabBarView(
-                                    controller: _tabController,
+                                    controller: _spentTabController,
                                     children: [
                                       ListView.builder(
                                           physics:
                                               const BouncingScrollPhysics(),
                                           shrinkWrap: true,
-                                          itemCount: selectedContacts.length,
+                                          itemCount: selectedContact.length,
                                           itemBuilder: ((context, index) {
                                             return Padding(
                                               padding:
@@ -751,56 +826,8 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                                                           MainAxisAlignment
                                                               .spaceBetween,
                                                       children: [
-                                                        selectedContacts[index]
-                                                                is String
-                                                            ? const Text("You",
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        16,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600))
-                                                            : Text(
-                                                                selectedContacts[
-                                                                        index]
-                                                                    .displayName,
-                                                                style: const TextStyle(
-                                                                    fontSize:
-                                                                        16,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600)),
                                                         Text(
-                                                            "₹${splittingAmountSingle.toStringAsFixed(2)}")
-                                                      ]),
-                                                  const SizedBox(
-                                                    height: 8,
-                                                  ),
-                                                  Divider()
-                                                ],
-                                              ),
-                                            );
-                                          })),
-                                      ListView.builder(
-                                          physics: BouncingScrollPhysics(),
-                                          shrinkWrap: true,
-                                          itemCount: selectedContacts.length,
-                                          itemBuilder: ((context, index) {
-                                            spentPerPerson.add(0);
-                                            spentPerPersonController.add(
-                                                new TextEditingController());
-                                            return Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Column(
-                                                children: [
-                                                  Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        Text(
-                                                            selectedContacts[
+                                                            selectedContact[
                                                                     index]
                                                                 .displayName,
                                                             style: const TextStyle(
@@ -808,7 +835,46 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w600)),
-                                                        Container(
+                                                        Text(
+                                                            "₹${splittingAmountSingle.toStringAsFixed(2)}")
+                                                      ]),
+                                                  const SizedBox(
+                                                    height: 8,
+                                                  ),
+                                                  const Divider()
+                                                ],
+                                              ),
+                                            );
+                                          })),
+                                      ListView.builder(
+                                          physics:
+                                              const BouncingScrollPhysics(),
+                                          shrinkWrap: true,
+                                          itemCount: selectedContact.length,
+                                          itemBuilder: ((context, index) {
+                                            spentPerPerson.add(0);
+                                            spentPerPersonController
+                                                .add(TextEditingController());
+                                            return Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Column(
+                                                children: [
+                                                  Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Text(
+                                                            selectedContact[
+                                                                    index]
+                                                                .displayName,
+                                                            style: const TextStyle(
+                                                                fontSize: 16,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600)),
+                                                        SizedBox(
                                                           width:
                                                               size.width * 0.25,
                                                           height: size.height *
@@ -905,12 +971,12 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                 TextButton(
                     onPressed: (() {
                       if (name.text.isNotEmpty && amount.text.isNotEmpty) {
-                        if (_tabController.index == 0) {
+                        if (_spentTabController.index == 0) {
                           uploadEqual(name.text, amountDouble,
                               expenseCategory[catSelected[0]]);
                           Navigator.pushNamedAndRemoveUntil(
                               context, HomeScreen.routeName, (route) => false);
-                        } else if (_tabController.index == 1) {
+                        } else if (_spentTabController.index == 1) {
                           if (customSplitBalance == 0) {
                             uploadCustom(name.text, amountDouble,
                                 expenseCategory[catSelected[0]]);
@@ -929,7 +995,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                       height: size.height * 0.06,
                       width: size.width * 0.65,
                       decoration: BoxDecoration(
-                          gradient: LinearGradient(
+                          gradient: const LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                               colors: [
@@ -939,7 +1005,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                               ]),
                           borderRadius: BorderRadius.circular(22)),
                       child: Center(
-                        child: _tabController.index == 0
+                        child: _spentTabController.index == 0
                             ? const Text("Save",
                                 style: TextStyle(
                                     color: Pallete.whiteColor,

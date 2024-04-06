@@ -35,7 +35,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   flutter_riverpod: ^2.4.9
-  otpless_flutter: 2.0.0
+  otpless_flutter: ^2.1.0
   http: ^1.0.0
   shared_preferences: ^2.2.2
   image_picker: ^1.0.4
@@ -46,6 +46,7 @@ dependencies:
   chip_list: ^2.4.4+8
   material_dialogs: ^1.1.4
   flutter_awesome_select: ^6.5.0
+  multiselect: ^0.1.0
   # dot_navigation_bar: ^1.0.2
   # image_picker: ^1.0.4
 

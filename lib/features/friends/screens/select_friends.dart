@@ -1,7 +1,9 @@
 import 'dart:ffi';
 import 'dart:math';
 
+import 'package:contri/contact/contact_api.dart';
 import 'package:contri/contact/select_contact_controller.dart';
+import 'package:contri/core/utils.dart';
 import 'package:contri/theme/pallete.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/contact.dart';
@@ -16,8 +18,7 @@ class SelectContactsGroup extends ConsumerStatefulWidget {
   Map<String, dynamic> selectedContactAndIndex = {'contact': [], 'index': []};
   static const routeName = '/add-people-screen';
 
-  SelectContactsGroup({Key? key, required this.selectedContactAndIndex})
-      : super(key: key);
+  SelectContactsGroup({super.key, required this.selectedContactAndIndex});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -27,24 +28,9 @@ class SelectContactsGroup extends ConsumerStatefulWidget {
 class _SelectContactsGroupState extends ConsumerState<SelectContactsGroup> {
   List<dynamic> selectedContactsIndex = [];
   TextEditingController searchController = TextEditingController();
-  List<dynamic> selectedContacts = [];
+  Map<Contact, double> selectedContacts = {};
   late List<dynamic> allContact;
   late List<Contact> foundContact = allContactList;
-
-  @override
-  initState() {
-    super.initState();
-
-    selectedContactsIndex = widget.selectedContactAndIndex['index']!;
-    Phone p = Phone('+918960685939');
-
-    Contact c = Contact(displayName: "You", phones: [p]);
-
-    selectedContacts = widget.selectedContactAndIndex['contact']!;
-    if (!selectedContacts.contains(c)) {
-      selectedContacts.add(c);
-    }
-  }
 
   List<Contact> allContactList = [];
   var isInitiated = false;
@@ -67,54 +53,33 @@ class _SelectContactsGroupState extends ConsumerState<SelectContactsGroup> {
   }
 
   void selectContact(String index, Contact contact) {
-    if (selectedContactsIndex.contains(index)) {
-      selectedContactsIndex.remove(index);
-      selectedContacts.remove(contact);
-    } else {
-      selectedContactsIndex.add(index);
-      selectedContacts.add(contact);
-    }
+    // selectedContactsIndex.add(index);
+    ref.read(selectedContactProvider.notifier).addContact(contact);
+    // selectedContacts.add(contact);
+
     setState(() {});
     ref
-        .read(selectedGroupContacts.state)
+        .read(selectedGroupContacts.notifier)
         .update((state) => [...state, contact]);
   }
 
-  void getContactList() {
-    ref.watch(getContactsProvider).when(
-          data: (contactList) {
-            allContactList = contactList;
 
-            if (!isInitiated) {
-              isInitiated = true;
-              foundContact = allContactList;
-            }
-          },
-          error: (err, trace) => Center(
-            child: Text(
-              err.toString(),
-            ),
-          ),
-          loading: () => const Loader(),
-        );
-  }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-
-    var greyLightColor;
-    getContactList();
-
+    selectedContacts = ref.watch(selectedContactProvider);
+    print(allContactList);
     return Scaffold(
       floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Navigator.pop(context,
-                {"contact": selectedContacts, "index": selectedContactsIndex});
+            Navigator.pop(
+              context,
+            );
           },
           child: Container(
-            height: 70,
-            width: 120,
+            height: 100,
+            width: 100,
             decoration: BoxDecoration(
                 gradient: const LinearGradient(
                     begin: Alignment.topLeft,
@@ -124,13 +89,12 @@ class _SelectContactsGroupState extends ConsumerState<SelectContactsGroup> {
                       Pallete.pinkLightColor,
                       Pallete.orangeLightColor
                     ]),
-                borderRadius: BorderRadius.circular(20)),
+                borderRadius: BorderRadius.circular(50)),
             child: const Center(
-                child: Text("Save",
-                    style: TextStyle(
-                        color: Pallete.whiteColor,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 20))),
+                child: Icon(
+              Icons.save,
+              color: Pallete.whiteColor,
+            )),
           )),
       appBar: AppBar(
           backgroundColor: Colors.transparent,
@@ -138,10 +102,7 @@ class _SelectContactsGroupState extends ConsumerState<SelectContactsGroup> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_rounded),
             onPressed: () {
-              Navigator.pop(context, {
-                "contact": selectedContacts,
-                "index": selectedContactsIndex
-              });
+              Navigator.pop(context);
             },
             color: Colors.black,
           ),
@@ -189,59 +150,73 @@ class _SelectContactsGroupState extends ConsumerState<SelectContactsGroup> {
               ),
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-                itemCount: foundContact.length,
-                itemBuilder: (context, index) {
-                  // var currPhone = foundContact[index].phones[0].toString();
+          ref.watch(getContactsProvider).when(error: (e, st) {
+            return Center(
+              child: Text(
+                e.toString(),
+              ),
+            );
+          }, loading: () {
+            return const Loader();
+          }, data: (data) {
+            allContactList = data;
 
-                  final contact = foundContact[index];
-                  return foundContact[index].phones.isNotEmpty
-                      ? InkWell(
-                          onTap: () => selectContact(
-                              foundContact[index].phones[0].number.toString(),
-                              contact),
-                          child: Column(
-                            children: [
-                              ListTile(
-                                title: Text(
-                                  contact.displayName,
-                                  style: const TextStyle(
-                                    fontSize: 18,
+            if (!isInitiated) {
+              isInitiated = true;
+              foundContact = allContactList;
+            }
+
+            return Expanded(
+              child: ListView.builder(
+                  itemCount: foundContact.length,
+                  itemBuilder: (context, index) {
+                    // var currPhone = foundContact[index].phones[0].toString();
+
+                    final contact = foundContact[index];
+                    return foundContact[index].phones.isNotEmpty
+                        ? InkWell(
+                            onTap: () => selectContact(
+                                foundContact[index].phones[0].number.toString(),
+                                contact),
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  title: Text(
+                                    contact.displayName,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  subtitle: Text(contact.phones[0].number),
+                                  trailing: selectedContacts
+                                          .containsKey(foundContact[index])
+                                      ? IconButton(
+                                          onPressed: () {},
+                                          icon: const Icon(
+                                            Icons.check_circle,
+                                            color: Colors.black54,
+                                          ),
+                                        )
+                                      : null,
+                                  leading: CircleAvatar(
+                                    radius: 18,
+                                    backgroundColor: Colors.grey.shade700,
+                                    child: const Icon(
+                                      Icons.person,
+                                      color: Pallete.whiteColor,
+                                    ),
                                   ),
                                 ),
-                                subtitle: Text(contact.phones[0].number),
-                                trailing: selectedContactsIndex.contains(
-                                        foundContact[index]
-                                            .phones[0]
-                                            .number
-                                            .toString())
-                                    ? IconButton(
-                                        onPressed: () {},
-                                        icon: const Icon(
-                                          Icons.check_circle,
-                                          color: Colors.black54,
-                                        ),
-                                      )
-                                    : null,
-                                leading: CircleAvatar(
-                                  radius: 18,
-                                  backgroundColor: Colors.grey.shade700,
-                                  child: const Icon(
-                                    Icons.person,
-                                    color: Pallete.whiteColor,
-                                  ),
-                                ),
-                              ),
-                              const Divider()
-                            ],
-                          ),
-                        )
-                      : const SizedBox(
-                          height: 0,
-                        );
-                }),
-          ),
+                                const Divider()
+                              ],
+                            ),
+                          )
+                        : const SizedBox(
+                            height: 0,
+                          );
+                  }),
+            );
+          })
         ],
       ),
     );

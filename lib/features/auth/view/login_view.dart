@@ -24,21 +24,21 @@ class _LoginViewState extends ConsumerState<LoginView> {
   };
 
   void requestSignIN() async {
-    await _otplessFlutterPlugin.openLoginPage(
-      (result) {
-        if (result['data'] != null) {
-          final token = result['data']['token'];
-          print(token);
-          // AuthAPI().signIn(token, context);
-          ref.read(authControllerProvider.notifier).signInUser(context, token);
-        } else {
-          showSnackBar(context, result['errorMessage']);
-        }
-      },
-    );
-    // ref
-    //     .read(authControllerProvider.notifier)
-    //     .signInUser(context, 'YatharthDixit');
+    // await _otplessFlutterPlugin.openLoginPage(
+    //   (result) {
+    //     if (result['data'] != null) {
+    //       final token = result['data']['token'];
+    //       print(token);
+    //       // AuthAPI().signIn(token, context);
+    //       ref.read(authControllerProvider.notifier).signInUser(context, token);
+    //     } else {
+    //       showSnackBar(context, result['errorMessage']);
+    //     }
+    //   },
+    // );
+    ref
+        .read(authControllerProvider.notifier)
+        .signInUser(context, 'YatharthDixit');
 
     // print(js)
   }
@@ -46,6 +46,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
   @override
   void initState() {
     // TODO: implement initState
+    // requestSignIN();
     super.initState();
   }
 

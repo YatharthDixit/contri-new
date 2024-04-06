@@ -7,6 +7,7 @@ import 'package:contri/router.dart';
 import 'package:contri/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,8 +28,15 @@ class _MyAppState extends ConsumerState<MyApp> {
   void initState() {
     // TODO: implement initState
     // SharedPreferences pref = await SharedPreferences.getInstance();
+
+
     // pref.setString('x-auth-token', '');
     super.initState();
+  }
+
+  void clearUser() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    // pref.setString('x-auth-token', '');
   }
 
   @override
@@ -39,6 +47,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       title: 'Flutter Demo',
       theme: AppTheme.theme,
       home: ref.watch(currentUserAccountProvider).when(data: (user) {
+        // clearUser();
         if (user != null) {
           return const HomeScreen();
         } else {
@@ -47,6 +56,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       }, error: (error, stackTrace) {
         return ErrorPage(error: error.toString());
       }, loading: () {
+        // clearUser();
         return const Scaffold(
           body: Center(
             child: CircularProgressIndicator(),
