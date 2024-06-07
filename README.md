@@ -22,19 +22,18 @@ Built Contri is a bill splitting app designed to simplify expense sharing with f
 
 Here are some screenshots of the app:
 
-![Screenshot 1](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/1.png)
-![Screenshot 2](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/2.png)
-![Screenshot 3](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/3.png)
-![Screenshot 4](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/4.png)
-![Screenshot 5](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/5.png)
-![Screenshot 6](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/6.png)
-![Screenshot 7](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/7.png)
-![Screenshot 8](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/8.png)
-![Screenshot 9](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/9.png)
+| ![Screenshot 1](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/1.png) | ![Screenshot 2](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/2.png) | ![Screenshot 3](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/3.png) |
+| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| ![Screenshot 4](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/4.png) | ![Screenshot 5](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/5.png) | ![Screenshot 6](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/6.png) |
+| ![Screenshot 7](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/7.png) | ![Screenshot 8](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/8.png) | ![Screenshot 9](https://github.com/YatharthDixit/contri-new/blob/main/Screenshots/9.png) |
 
-## Video Demo : https://youtu.be/nR1n1bqRITY
+## Video Demo
 
-## Backend repository : https://github.com/YatharthDixit/contri-server-typescript
+Watch the video demo: [https://youtu.be/nR1n1bqRITY](https://youtu.be/nR1n1bqRITY)
+
+## Backend Repository
+
+Check out the backend repository: [https://github.com/YatharthDixit/contri-server-typescript](https://github.com/YatharthDixit/contri-server-typescript)
 
 ## Installation
 
