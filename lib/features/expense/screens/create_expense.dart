@@ -33,6 +33,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
             selectedContactAndIndex: widget.selectedContactAndIndex,
           ),
         ));
+    setState(() {});
     // after the SecondScreen result comes back update the Text widget with it
   }
 
@@ -74,7 +75,15 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
 
   String paidByButtonText = "Save";
 
-  void updatePaidSaveButtonText() {}
+  void updatePaidSaveButtonText() {
+    double tempSum = 0;
+    double totalAmount = double.parse(amount.text);
+    for (var tempContact in selectedContact) {
+      tempSum += selectedContactsAndPaidAmount[tempContact]!;
+    }
+    paidByButtonText =
+        totalAmount == tempSum ? "Save" : "Balance : ${totalAmount - tempSum}";
+  }
 
   @override
   void dispose() {
@@ -247,106 +256,190 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
                               ListView.builder(
                                   physics: const BouncingScrollPhysics(),
                                   shrinkWrap: true,
-                                  itemCount: selectedContact.length,
+                                  itemCount: selectedContact.length + 1,
                                   itemBuilder: ((context, index) {
                                     amountPaidPerPersonConntroller
                                         .add(TextEditingController());
 
-                                    return Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        children: [
-                                          Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text(
-                                                    selectedContact[index]
-                                                        .displayName,
-                                                    style: const TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w600)),
-                                                SizedBox(
-                                                  width: size.width * 0.25,
-                                                  height: size.height * 0.035,
-                                                  child: Row(
-                                                    children: [
-                                                      const Text(
-                                                        "₹",
+                                    return index == selectedContact.length
+                                        ? TextButton(
+                                            onPressed: (() {
+                                              if (name.text.isNotEmpty &&
+                                                  amount.text.isNotEmpty) {
+                                                if (_spentTabController.index ==
+                                                    0) {
+                                                  uploadEqual(
+                                                      name.text,
+                                                      amountDouble,
+                                                      expenseCategory[
+                                                          catSelected[0]]);
+                                                  Navigator
+                                                      .pushNamedAndRemoveUntil(
+                                                          context,
+                                                          HomeScreen.routeName,
+                                                          (route) => false);
+                                                } else if (_spentTabController
+                                                        .index ==
+                                                    1) {
+                                                  if (customSplitBalance == 0) {
+                                                    uploadCustom(
+                                                        name.text,
+                                                        amountDouble,
+                                                        expenseCategory[
+                                                            catSelected[0]]);
+                                                    Navigator
+                                                        .pushNamedAndRemoveUntil(
+                                                            context,
+                                                            HomeScreen
+                                                                .routeName,
+                                                            (route) => false);
+                                                  } else {
+                                                    showSnackBar(context,
+                                                        "Total amount is different from splitted amount.");
+                                                  }
+                                                }
+                                              } else {
+                                                showSnackBar(context,
+                                                    "Enter required details.");
+                                              }
+                                            }),
+                                            child: Container(
+                                              height: size.height * 0.06,
+                                              width: size.width * 0.65,
+                                              decoration: BoxDecoration(
+                                                  gradient:
+                                                      const LinearGradient(
+                                                          begin:
+                                                              Alignment.topLeft,
+                                                          end: Alignment
+                                                              .bottomRight,
+                                                          colors: [
+                                                        Pallete.blueLightColor,
+                                                        Pallete.pinkLightColor,
+                                                        Pallete.orangeLightColor
+                                                      ]),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          22)),
+                                              child: Center(
+                                                child: _spentTabController
+                                                            .index ==
+                                                        0
+                                                    ? const Text("Save",
                                                         style: TextStyle(
-                                                            fontSize: 18,
+                                                            color: Pallete
+                                                                .whiteColor,
                                                             fontWeight:
-                                                                FontWeight
-                                                                    .w500),
+                                                                FontWeight.w500,
+                                                            fontSize: 20))
+                                                    : Text(
+                                                        saveButtonText,
+                                                        style: const TextStyle(
+                                                            color: Pallete
+                                                                .whiteColor,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            fontSize: 20),
                                                       ),
-                                                      const SizedBox(
-                                                        width: 5,
-                                                      ),
-                                                      Expanded(
-                                                        child: Container(
-                                                          decoration:
-                                                              BoxDecoration(
-                                                                  border: Border
-                                                                      .all(
-                                                                    color: Pallete
-                                                                        .greyColor,
-                                                                  ),
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              8)),
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .only(
-                                                                    left: 8.0),
-                                                            child: TextField(
-                                                              onTap:
-                                                                  _scrollDown,
-                                                              style: const TextStyle(
+                                              ),
+                                            ))
+                                        : Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Column(
+                                              children: [
+                                                Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Text(
+                                                          selectedContact[index]
+                                                              .displayName,
+                                                          style: const TextStyle(
+                                                              fontSize: 16,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600)),
+                                                      SizedBox(
+                                                        width:
+                                                            size.width * 0.25,
+                                                        height:
+                                                            size.height * 0.035,
+                                                        child: Row(
+                                                          children: [
+                                                            const Text(
+                                                              "₹",
+                                                              style: TextStyle(
                                                                   fontSize: 18,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w500),
-                                                              controller:
-                                                                  amountPaidPerPersonConntroller[
-                                                                      index],
-                                                              keyboardType:
-                                                                  TextInputType
-                                                                      .number,
-                                                              decoration: const InputDecoration(
-                                                                  border:
-                                                                      InputBorder
-                                                                          .none),
-                                                              onChanged:
-                                                                  (value) {
-                                                                if (value
-                                                                    .isNotEmpty) {
-                                                                  selectedContactsAndPaidAmount[
-                                                                      selectedContact[
-                                                                          index]] = double
-                                                                      .parse(
-                                                                          value);
-                                                                }
-                                                                updatePaidSaveButtonText();
-                                                              },
                                                             ),
-                                                          ),
+                                                            const SizedBox(
+                                                              width: 5,
+                                                            ),
+                                                            Expanded(
+                                                              child: Container(
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                        border: Border
+                                                                            .all(
+                                                                          color:
+                                                                              Pallete.greyColor,
+                                                                        ),
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(8)),
+                                                                child: Padding(
+                                                                  padding:
+                                                                      const EdgeInsets
+                                                                          .only(
+                                                                          left:
+                                                                              8.0),
+                                                                  child:
+                                                                      TextField(
+                                                                    onTap:
+                                                                        _scrollDown,
+                                                                    style: const TextStyle(
+                                                                        fontSize:
+                                                                            18,
+                                                                        fontWeight:
+                                                                            FontWeight.w500),
+                                                                    controller:
+                                                                        amountPaidPerPersonConntroller[
+                                                                            index],
+                                                                    keyboardType:
+                                                                        TextInputType
+                                                                            .number,
+                                                                    decoration:
+                                                                        const InputDecoration(
+                                                                            border:
+                                                                                InputBorder.none),
+                                                                    onChanged:
+                                                                        (value) {
+                                                                      if (value
+                                                                          .isNotEmpty) {
+                                                                        selectedContactsAndPaidAmount[
+                                                                            selectedContact[
+                                                                                index]] = double.parse(
+                                                                            value);
+                                                                      }
+                                                                      updatePaidSaveButtonText();
+                                                                    },
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                )
-                                              ]),
-                                          const SizedBox(
-                                            height: 8,
-                                          ),
-                                          const Divider()
-                                        ],
-                                      ),
-                                    );
+                                                      )
+                                                    ]),
+                                                const SizedBox(
+                                                  height: 8,
+                                                ),
+                                                const Divider()
+                                              ],
+                                            ),
+                                          );
                                   })),
                             ],
                           ),
@@ -449,9 +542,9 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen>
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    selectedContactsAndPaidAmount = ref.watch(selectedContactProvider).;
+    selectedContactsAndPaidAmount = ref.watch(selectedContactProvider);
 
-    selectedContact = selectedContactsAndPaidAmount.keys.toList();
+    selectedContact = ref.watch(selectedContactProvider).keys.toList();
 
     // TextEditingController _colorsTextEditingController =
     //     TextEditingController();
