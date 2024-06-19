@@ -41,10 +41,10 @@ To clone and run this application, you'll need [Git](https://git-scm.com), [Flut
 
 ```bash
 # Clone this repository
-$ git clone https://github.com/yourusername/built-contri.git
+$ git clone https://github.com/YatharthDixit/contri-new
 
 # Go into the repository
-$ cd built-contri
+$ cd contri-new
 
 # Install dependencies
 $ flutter pub get
